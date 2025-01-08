@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext } from "../context/COntext";
+import { AppContext } from "../context/C0ntext";
 import { useNavigate } from "react-router";
 import Skeleton from "react-loading-skeleton";
 

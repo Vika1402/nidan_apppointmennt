@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext } from "../context/COntext";
+import { AppContext } from "../context/C0ntext";
 import { useParams } from "react-router";
 import { assets } from "../assets/assets/assets";
 import SimilarSeciality from "../components/SimilarSeciality";
