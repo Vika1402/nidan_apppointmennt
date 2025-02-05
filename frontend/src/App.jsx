@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router";
 import Home from "./pages/Home";
-
+import { Toaster } from "react-hot-toast";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Contact from "./pages/Contact";
@@ -31,6 +31,7 @@ function App() {
         <Route path="/*" element={<Home />} />
       </Routes>
       <Footer />
+      <Toaster />
     </div>
   );
 }

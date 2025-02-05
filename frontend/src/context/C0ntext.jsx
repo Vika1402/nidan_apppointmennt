@@ -1,39 +1,39 @@
 import { createContext, useEffect, useState } from "react";
 import { doctors } from "../assets/assets/assets";
 import axiosInstance from "../utility/axiosInstant";
-import toast, { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
   const currencySymbol = "₹";
   const [doctors, setDoctors] = useState([]);
 
-  const getAllDoctors = async () => {
+  const getDOctorsList = async () => {
     try {
-      const { data } = await axiosInstance("/api/doctor/list");
+      const { data } = await axiosInstance.get("/api/doctor/list");
+      console.log(data);
 
-      if (data.success) {
-        setDoctors(data.doctors);
+      if (data?.success) {
+        setDoctors(data?.doctors);
       } else {
-        toast.error("Failed to fetch doctors");
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message);
       console.log(error);
     }
-
-    useEffect(() => {
-      getAllDoctors();
-    }, []);
-
-    const value = {
-      doctors,
-      currencySymbol,
-    };
-    return (
-      <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
-    );
   };
+  useEffect(() => {
+    getDOctorsList();
+  }, []);
+
+  const value = {
+    doctors,
+    currencySymbol,
+    getDOctorsList,
+  };
+  return (
+    <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
+  );
 };
 
 export default AppContextProvider;

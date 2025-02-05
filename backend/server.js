@@ -4,6 +4,7 @@ import dootenv from "dotenv";
 import { connectDb } from "./config/db.js";
 import { adminRouter } from "./Routers/admin.route.js";
 import { connectCloudinary } from "./config/cloudinary.js";
+import { doctorRouter } from "./Routers/doctor.route.js";
 
 dootenv.config();
 
@@ -23,6 +24,7 @@ app.get("/hello", (req, res) => {
   res.json({ message: "hello" });
 });
 app.use("/api/admin", adminRouter);
+app.use("/api/doctor", doctorRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
