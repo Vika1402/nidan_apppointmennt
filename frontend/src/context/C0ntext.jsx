@@ -7,6 +7,12 @@ export const AppContext = createContext();
 const AppContextProvider = (props) => {
   const currencySymbol = "₹";
   const [doctors, setDoctors] = useState([]);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
+  }, []);
 
   const getDOctorsList = async () => {
     try {
@@ -30,6 +36,8 @@ const AppContextProvider = (props) => {
     doctors,
     currencySymbol,
     getDOctorsList,
+    token,
+    setToken,
   };
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>

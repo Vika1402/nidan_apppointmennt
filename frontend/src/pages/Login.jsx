@@ -1,18 +1,57 @@
-import React, { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router";
+import React, { useContext, useEffect, useState } from "react";
+import { FaEye, FaEyeSlash, FaFontAwesomeLogoFull } from "react-icons/fa";
+import { Link, useNavigate } from "react-router";
+import { AppContext } from "../context/C0ntext";
+import axiosInstance from "../utility/axiosInstant";
+import toast from "react-hot-toast";
 
 function Login() {
   const [state, setState] = useState("Sign Up");
-  const [emial, setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const onSubmitHandler = (e) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const { token, setToken } = useContext(AppContext);
+  const onSubmitHandler = async (e) => {
     event.preventDefault();
-    console.log(e.target);
+    //console.log(e.target.value);
+    try {
+      if (state === "Sign Up") {
+        const { data } = await axiosInstance.post("/api/user/register", {
+          email,
+          password,
+          name,
+        });
+        console.log(data);
+
+        if (data.success) {
+          toast.success(data.message);
+          localStorage.setItem("token", data.token);
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        const userData = {
+          email,
+          password,
+        };
+
+        const { data } = await axiosInstance.post("/api/user/login", userData);
+        if (data.success) {
+          toast.success(data.message);
+          localStorage.setItem("token", data.token);
+          setToken(data.token); // Update state to trigger re-render
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error);
+    }
   };
 
   function togglePasswordVisibility(e) {
@@ -57,6 +96,7 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="px-16 border py-3 rounded-md text-lg"
                 id="email"
+                value={email}
                 type="text"
                 placeholder="Enter Email"
               />
