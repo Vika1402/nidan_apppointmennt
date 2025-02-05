@@ -7,6 +7,7 @@ import {
 import { upload } from "../middlewares/multer.js";
 import { adminAuthentication } from "../middlewares/authAdmin.js";
 import { changeAvailability } from "../controllers/doctor.controller.js";
+
 const adminRouter = express.Router();
 
 adminRouter.post(

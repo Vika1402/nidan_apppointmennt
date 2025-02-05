@@ -32,22 +32,24 @@ const AdminContextProvider = ({ children }) => {
     }
   };
 
-  const changeAvailablity = async () => {
+  const changeAvailablity = async (doctorId) => {
     try {
-      const { data } = await axiosInstance.post(
+      const response = await axiosInstance.post(
         "/api/admin/change-availability",
         { doctorId },
         { headers: { atoken } }
       );
 
+      const data = response.data;
+
       if (data.success) {
         toast.success(data.message);
-        getAllDoctors();
-      }else{
-        toast.error(data.message)
+        await getAllDoctors();
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error);
+      toast.error(error.message);
     }
   };
 
