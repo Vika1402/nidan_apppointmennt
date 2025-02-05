@@ -1,13 +1,3 @@
-# Node.js dependencies
-node_modules/
-npm-debug.log
-yarn-error.log
-
-# Environment variables
-.env
-
-# Logs
-logs/
 *.log
 
 # OS generated files
@@ -21,3 +11,6 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
+
+# Environment variables
+.env
