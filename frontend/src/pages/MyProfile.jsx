@@ -16,6 +16,12 @@ function MyProfile() {
   });
   const [isEdit, setIsEdit] = useState(false);
 
+
+
+
+
+
+  
   return (
     <div className="max-w-lg flex flex-col gap-2 text-md mt-24">
       <img className="w-36 rounded-full" src={userDate.image} alt="" />

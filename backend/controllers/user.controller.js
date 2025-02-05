@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import { User } from "../models/user.model.js";
-
+import { v2 as cloudinary } from "cloudinary";
 // Register a new user
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -77,6 +77,58 @@ export const loginUser = async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
+    res.json({ success: false, message: err.message });
+  }
+};
+
+// Get user profile data
+export const getUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const userData = await User.findById(userId).select("-password");
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({
+      success: true,
+      userData,
+    });
+  } catch (err) {
+    console.error(err.message);
     res.status(500).send("Server error");
+  }
+};
+
+// Update user profile
+export const updateUserProfile = async (req, res) => {
+  try {
+    const { userId, name, email, phone, dob, gender, address } = req.body;
+    const imageFile = req.file;
+
+    if (!email || !name || !userId || !phone || !dob || !gender || !address) {
+      return res.json({ success: false, message: "All feild required" });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      name,
+      phone,
+      dob,
+      gender,
+      email,
+      address: JSON.parse(address),
+    });
+    if (imageFile) {
+      //upload image cloinadary
+      const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
+        resource_type: "image",
+      });
+      const imageUrl = imageUpload.secure_url;
+      await User.findByIdAndUpdate(userId, { image: imageUrl });
+    }
+
+    res.json({ success: true, message: "profile updated successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.json({ success: false, message: err.message });
   }
 };
