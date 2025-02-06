@@ -9,6 +9,7 @@ const AppContextProvider = (props) => {
   const [doctors, setDoctors] = useState([]);
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [userData, setUserData] = useState(null);
+  const [myAppointment, setMyAppointment] = useState(null);
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
@@ -57,6 +58,8 @@ const AppContextProvider = (props) => {
     loadUserProfileData,
     userData,
     setUserData,
+    myAppointment,
+    setMyAppointment,
   };
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>

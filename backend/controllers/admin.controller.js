@@ -33,18 +33,18 @@ const addDoctor = async (req, res) => {
   ) {
     return res
       .status(400)
-      .json({ success: false, error: "All fields are required" });
+      .json({ success: false, message: "All fields are required" });
   }
-  if (!validator.isEmail(email)) {
+  if (!email) {
     return res
       .status(400)
-      .json({ success: false, error: "Plese Enter Valid Email Address" });
+      .json({ success: false, message: "Plese Enter Valid Email Address" });
   }
 
   if (password.length < 6) {
     return res.status(400).json({
       success: false,
-      error: "Plese Enter a strong Password atleast 8 charcter ",
+      message: "Plese Enter a strong Password atleast 8 charcter ",
     });
   }
 
@@ -122,7 +122,5 @@ const getAllDoctors = async (req, res) => {
       .send({ error: "Error adding doctor", message: error.message });
   }
 };
-
-
 
 export { addDoctor, loginAdmin, getAllDoctors };

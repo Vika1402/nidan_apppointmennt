@@ -1,8 +1,51 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { AppContext } from "../context/C0ntext";
+import axiosInstance from "../utility/axiosInstant";
+import toast from "react-hot-toast";
 
 function MyApointment() {
-  const { doctors } = useContext(AppContext);
+  const { doctors, myAppointment, setMyAppointment, token } =
+    useContext(AppContext);
+
+  const getAppointments = async () => {
+    const { data } = await axiosInstance.post(
+      "/api/user/get-appointment",
+      {},
+      {
+        headers: { token },
+      }
+    );
+
+    if (data.success) {
+      toast.success("appointment fetched");
+      setMyAppointment(data.appointments);
+      console.log(data);
+    } else {
+      toast.error(data.message);
+    }
+  };
+
+  const cancelAppointments = async (appointmentId) => {
+    const { data } = await axiosInstance.post(
+      "/api/user/cancel-appointment",
+      { appointmentId },
+      { headers: { token } }
+    );
+
+    if (data.success) {
+      toast.success("appointment Canceled");
+      setMyAppointment((prevAppointments) =>
+        prevAppointments.filter((appointment) => appointment._id !== appointmentId)
+      );
+      console.log(data);
+    } else {
+      toast.error(data.message);
+      console.log(data);
+    }
+  };
+  useEffect(() => {
+    getAppointments();
+  }, []);
 
   return (
     <div className="mt-24">
@@ -11,23 +54,28 @@ function MyApointment() {
       </p>
       <hr />
       <div>
-        {doctors.slice(0, 2).map((item, index) => {
+        {myAppointment?.map((item, index) => {
           return (
             <div
               key={index}
               className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2 border-b-2"
             >
               <div>
-                <img className="w-32 bg-indigo-50" src={item.image} alt="" />
+                <img
+                  className="w-32 bg-indigo-50"
+                  src={item.docData.image}
+                  alt=""
+                />
               </div>
               <div className="flex-1 text-sm text-gray-500">
-                <p className="text-lg ">{item.name}</p>
-                <p className="font-semibold">{item.speciality}</p>
+                <p className="text-lg ">{item?.docData?.name}</p>
+                <p className="font-semibold">{item?.docData?.speciality}</p>
                 <p>Address</p>
-                <p>{item.address.line1}</p>
-                <p>{item.address.line2}</p>
+                <p>{item?.docData?.address.line1}</p>
+                <p>{item?.docData?.address.line2}</p>
                 <p>
-                  <span>Date & Time</span>25 Jan 2025 | 12:30
+                  <span>{item.slotDate}</span>
+                  {item.slotTime}
                 </p>
                 <p></p>
               </div>
@@ -36,7 +84,10 @@ function MyApointment() {
                   <button className="bg-primary px-8 py-2 rounded-lg text-white hover:bg-blue-700 hover:text-white  transition-all duration-300">
                     Pay Online
                   </button>
-                  <button className="border tetxt-gray-700 px-8 py-2 rounded-lg  hover:bg-red-500 hover:text-white transition-all duration-300">
+                  <button
+                    onClick={() => cancelAppointments(item._id)}
+                    className="border text-gray-700 px-8 py-2 rounded-lg hover:bg-red-500 hover:text-white transition-all duration-300"
+                  >
                     Cancel Appointment
                   </button>
                 </div>

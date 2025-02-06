@@ -8,7 +8,7 @@ function SimilarSeciality({ speciality }) {
   const { doctors } = useContext(AppContext);
 
   const navigate = useNavigate();
-  console.log(speciality);
+  //console.log(doctors);
   const applyFilter = () => {
     if (speciality) {
       setDocInfo(doctors.filter((doc) => doc.speciality === speciality));
@@ -34,11 +34,15 @@ function SimilarSeciality({ speciality }) {
                   key={index}
                   className="border mt-5 w-[180px] xl:w-[260px] lg:w-[220px] border-blue-200 rounded-xl overflow-hidden cursor-pointer shadow-md"
                 >
-                  <img className="bg-blue-50" src={item.image} alt="" />
+                  <img className="bg-blue-50 w-72 h-72 object-cover  object-center" src={item.image} alt="" />
                   <div className="p-4 ">
                     <div className="flex items-center gap-2 text-sm text-center text-green-500">
-                      <p className="w-2 h-2 bg-green-500 rounded-full "></p>
-                      <p>Available</p>
+                      <p
+                        className={`w-4 h-4 ${
+                          item.available ? " bg-green-500" : " bg-red-500"
+                        } rounded-full`}
+                      ></p>
+                      <p>{item.availale}</p>
                     </div>
                     <p className="font-semibold">{item.name}</p>
                     <p>{item.speciality}</p>

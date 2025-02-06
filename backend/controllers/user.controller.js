@@ -146,32 +146,35 @@ export const updateUserProfile = async (req, res) => {
 // Book an appointment
 export const bookAppointment = async (req, res) => {
   try {
-    const { docId, slotDate, slotTime } = req.body;
-    const { userId } = req.body; // Extract userId from token
+    const { docId, slotDate, slotTime, userId } = req.body;
 
     if (!userId || !docId || !slotDate || !slotTime) {
-      return res.json({ success: false, message: "All fields are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
 
     const docData = await Doctor.findById(docId);
     if (!docData || !docData.available) {
-      return res.status(404).json({ message: "Doctor not available" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Doctor not available" });
     }
 
-    let slot_booked = docData.slot_booked || {};
+    let slotBooked = docData.slot_booked;
+    slotBooked[slotDate] = slotBooked[slotDate] || [];
 
-    if (!slot_booked[slotDate]) {
-      slot_booked[slotDate] = [];
+    if (slotBooked[slotDate].includes(slotTime)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Slot time not available" });
     }
 
-    if (slot_booked[slotDate].includes(slotTime)) {
-      return res.status(400).json({ message: "Slot time not available" });
-    }
-
-    slot_booked[slotDate].push(slotTime);
+    slotBooked[slotDate].push(slotTime);
+    await Doctor.findByIdAndUpdate(docId, { slotBooked }, { new: true });
 
     const userData = await User.findById(userId);
-    const newAppointment = await Appointment.create({
+    await Appointment.create({
       userId,
       docId,
       slotDate,
@@ -182,58 +185,58 @@ export const bookAppointment = async (req, res) => {
       date: Date.now(),
     });
 
-    await Doctor.findByIdAndUpdate(docId, { slot_booked }, { new: true });
-
-    res.json({ success: true, message: "Appointment booked" });
+    res
+      .status(201)
+      .json({ success: true, message: "Appointment booked successfully" });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Cancel an appointment
-// export const cancelAppointment = async (req, res) => {
-//   const { appointmentId } = req.body;
+// Get user appointments
+export const getUserAppointments = async (req, res) => {
+  const { userId } = req.body;
 
-//   if (!appointmentId) {
-//     return res.json({ success: false, message: "Appointment ID is required" });
-//   }
+  if (!userId) {
+    return res.json({ success: false, message: "User ID is required" });
+  }
 
-//   try {
-//     const appointment = await Appointment.findById(appointmentId);
-//     if (!appointment) {
-//       return res.status(404).json({ message: "Appointment not found" });
-//     }
+  try {
+    const appointments = await Appointment.find({ userId });
+    res.json({
+      success: true,
+      appointments,
+      message: "Appointment fetched",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 
-//     appointment.cancelled = true;
-//     await appointment.save();
+export const cancelAppointment = async (req, res) => {
+  const { appointmentId } = req.body;
+  console.log(appointmentId);
+  
+  if (!appointmentId) {
+    return res.json({ success: false, message: "Appointment ID is required" });
+  }
 
-//     res.json({
-//       success: true,
-//       message: "Appointment cancelled successfully",
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.json({ success: false, message: err.message });
-//   }
-// };
+  try {
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
 
-// // Get user appointments
-// export const getUserAppointments = async (req, res) => {
-//   const { userId } = req.body;
+    await Appointment.findByIdAndDelete(appointmentId);
 
-//   if (!userId) {
-//     return res.json({ success: false, message: "User ID is required" });
-//   }
-
-//   try {
-//     const appointments = await Appointment.find({ userId });
-//     res.json({
-//       success: true,
-//       appointments,
-//     });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.json({ success: false, message: err.message });
-//   }
-// };
+    res.json({
+      success: true,
+      message: "Appointment cancelled successfully",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.json({ success: false, message: err.message });
+  }
+};

@@ -52,6 +52,7 @@ function AddDoctor() {
           headers: { atoken },
         }
       );
+     
 
       if (data.success) {
         toast.success(data.message);

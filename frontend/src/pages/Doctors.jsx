@@ -93,7 +93,7 @@ function Doctors() {
                   key={index}
                   className="border w-[200px] xl:w-[270px] lg:w-[220px] border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all shadow-md duration-500"
                 >
-                  <img className="bg-blue-50" src={item.image} alt="" />
+                  <img className="bg-blue-50 w-72 h-72 object-cover  object-center" src={item.image} alt="" />
                   <div className="p-4 ">
                     <div className="flex items-center gap-2 text-sm text-center text-green-500">
                       <p className="w-2 h-2 bg-green-500 rounded-full "></p>
