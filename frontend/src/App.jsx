@@ -10,8 +10,7 @@ import MyApointment from "./pages/MyApointment";
 import Apointmet from "./pages/Apointmet";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-
-const Doctors = React.lazy(() => import("./pages/Doctors"));
+import Doctors from "./pages/Doctors";
 
 function App() {
   return (

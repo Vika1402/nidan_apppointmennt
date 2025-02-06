@@ -25,8 +25,8 @@ const userSchema = new Schema({
     required: true,
   },
   address: {
-    type: Object,
-    default: { line1: " ", line2: " " },
+    line1: { type: String, required: true },
+    line2: { type: String },
   },
   gender: {
     type: String,

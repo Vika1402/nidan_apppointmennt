@@ -102,41 +102,37 @@ export const getUserProfile = async (req, res) => {
 // Update user profile
 export const updateUserProfile = async (req, res) => {
   try {
-    const { userId, name, phone, dob, gender, address } = req.body;
+    const { userId, name, phone, dob, gender, line1, line2 } = req.body;
     const imageFile = req.file;
 
-    if (!name) {
-      return res.json({ success: false, message: "Name is required" });
-    }
-    if (!phone) {
-      return res.json({ success: false, message: "Phone is required" });
-    }
-    if (!dob) {
-      return res.json({ success: false, message: "Date of birth is required" });
-    }
-    if (!gender) {
-      return res.json({ success: false, message: "Gender is required" });
-    }
+    if (!name) return res.json({ success: false, message: "Name is required" });
+    if (!phone) return res.json({ success: false, message: "Phone is required" });
+    if (!dob) return res.json({ success: false, message: "Date of birth is required" });
+    if (!gender) return res.json({ success: false, message: "Gender is required" });
+    if (!line1) return res.json({ success: false, message: "Address line1 is required" });
 
-    await User.findByIdAndUpdate(userId, {
+    const updateData = {
       name,
       phone,
       dob,
       gender,
-      address: address ? JSON.parse(address) : undefined,
-    });
+      address: { line1, line2: line2 || "" }, // Ensure line2 is an empty string if not provided
+    };
+
     if (imageFile) {
-      //upload image to cloudinary
+      // Upload image to Cloudinary
       const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
         resource_type: "image",
       });
-      const imageUrl = imageUpload.secure_url;
-      await User.findByIdAndUpdate(userId, { image: imageUrl });
+      updateData.image = imageUpload.secure_url;
     }
 
-    res.json({ success: true, message: "profile updated successfully" });
+    await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+    res.json({ success: true, message: "Profile updated successfully" });
   } catch (err) {
     console.error(err.message);
     res.json({ success: false, message: err.message });
   }
 };
+

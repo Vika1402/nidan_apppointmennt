@@ -13,7 +13,7 @@ const userRouter = express.Router();
 userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/profile", userAuthentication, getUserProfile);
-userRouter.post(
+userRouter.put(
   "/update-profile",
   upload.single("image"),
   userAuthentication,
