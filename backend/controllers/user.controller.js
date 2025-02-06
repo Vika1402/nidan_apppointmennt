@@ -3,6 +3,8 @@ import jwt from "jsonwebtoken";
 import validator from "validator";
 import { User } from "../models/user.model.js";
 import { v2 as cloudinary } from "cloudinary";
+import { Appointment } from "../models/appointment.model.js";
+import { Doctor } from "../models/doctor.schema.js";
 // Register a new user
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -106,10 +108,14 @@ export const updateUserProfile = async (req, res) => {
     const imageFile = req.file;
 
     if (!name) return res.json({ success: false, message: "Name is required" });
-    if (!phone) return res.json({ success: false, message: "Phone is required" });
-    if (!dob) return res.json({ success: false, message: "Date of birth is required" });
-    if (!gender) return res.json({ success: false, message: "Gender is required" });
-    if (!line1) return res.json({ success: false, message: "Address line1 is required" });
+    if (!phone)
+      return res.json({ success: false, message: "Phone is required" });
+    if (!dob)
+      return res.json({ success: false, message: "Date of birth is required" });
+    if (!gender)
+      return res.json({ success: false, message: "Gender is required" });
+    if (!line1)
+      return res.json({ success: false, message: "Address line1 is required" });
 
     const updateData = {
       name,
@@ -136,3 +142,98 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
+//write conntroller ook appountment
+// Book an appointment
+export const bookAppointment = async (req, res) => {
+  try {
+    const { docId, slotDate, slotTime } = req.body;
+    const { userId } = req.body; // Extract userId from token
+
+    if (!userId || !docId || !slotDate || !slotTime) {
+      return res.json({ success: false, message: "All fields are required" });
+    }
+
+    const docData = await Doctor.findById(docId);
+    if (!docData || !docData.available) {
+      return res.status(404).json({ message: "Doctor not available" });
+    }
+
+    let slot_booked = docData.slot_booked || {};
+
+    if (!slot_booked[slotDate]) {
+      slot_booked[slotDate] = [];
+    }
+
+    if (slot_booked[slotDate].includes(slotTime)) {
+      return res.status(400).json({ message: "Slot time not available" });
+    }
+
+    slot_booked[slotDate].push(slotTime);
+
+    const userData = await User.findById(userId);
+    const newAppointment = await Appointment.create({
+      userId,
+      docId,
+      slotDate,
+      slotTime,
+      userData,
+      docData,
+      amount: docData.fees,
+      date: Date.now(),
+    });
+
+    await Doctor.findByIdAndUpdate(docId, { slot_booked }, { new: true });
+
+    res.json({ success: true, message: "Appointment booked" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Cancel an appointment
+// export const cancelAppointment = async (req, res) => {
+//   const { appointmentId } = req.body;
+
+//   if (!appointmentId) {
+//     return res.json({ success: false, message: "Appointment ID is required" });
+//   }
+
+//   try {
+//     const appointment = await Appointment.findById(appointmentId);
+//     if (!appointment) {
+//       return res.status(404).json({ message: "Appointment not found" });
+//     }
+
+//     appointment.cancelled = true;
+//     await appointment.save();
+
+//     res.json({
+//       success: true,
+//       message: "Appointment cancelled successfully",
+//     });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.json({ success: false, message: err.message });
+//   }
+// };
+
+// // Get user appointments
+// export const getUserAppointments = async (req, res) => {
+//   const { userId } = req.body;
+
+//   if (!userId) {
+//     return res.json({ success: false, message: "User ID is required" });
+//   }
+
+//   try {
+//     const appointments = await Appointment.find({ userId });
+//     res.json({
+//       success: true,
+//       appointments,
+//     });
+//   } catch (err) {
+//     console.error(err.message);
+//     res.json({ success: false, message: err.message });
+//   }
+// };

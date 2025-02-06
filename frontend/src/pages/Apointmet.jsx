@@ -1,16 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/C0ntext";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { assets } from "../assets/assets/assets";
 import SimilarSeciality from "../components/SimilarSeciality";
+import toast from "react-hot-toast";
+import axiosInstance from "../utility/axiosInstant";
 
 function Apointmet() {
   const { docId } = useParams();
-  const { doctors, currencySymbol } = useContext(AppContext);
+  const { doctors, currencySymbol, token, getDOctorsList } =
+    useContext(AppContext);
   const [docInfo, setDocInfo] = useState(null);
   const [docSlot, setdocSlot] = useState([]);
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
+  const navigate = useNavigate();
 
   const daysOOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -19,7 +23,10 @@ function Apointmet() {
     setDocInfo(docInfo);
   };
   const getAvailableSlots = async () => {
-    setdocSlot([]); // Clear previous slots
+    let allSlots = [];
+
+    setdocSlot(allSlots);
+
     const today = new Date();
 
     for (let i = 0; i < 7; i++) {
@@ -75,7 +82,46 @@ function Apointmet() {
 
   useEffect(() => {
     console.log(docSlot);
-  }, [docSlot]);
+  }, []);
+
+  const bookAppointment = async () => {
+    if (!token) {
+      toast.error("login required fro book appointment");
+      return navigate("/login");
+    }
+
+    try {
+      const { dateTime } = docSlot[slotIndex][0];
+      const day = dateTime.getDate();
+      const month = dateTime.getMonth() + 1;
+      const year = dateTime.getFullYear();
+      const slotDate = day + "_" + month + "_" + year;
+      console.log(slotDate);
+
+      const { data } = await axiosInstance.post(
+        "/api/user/appointment",
+        {
+          docId,
+          slotDate,
+          slotTime,
+        },
+        { headers: { token } }
+      );
+
+      if (data.success) {
+        toast.success("Appointment booked successfully!");
+        getDOctorsList();
+        return navigate("/myappointment");
+      } else {
+        toast.error(data.message);
+        console.log(data);
+      }
+    } catch (error) {
+      console.log("Error booking appointment:", error);
+      toast.error("Error Catched :" + error.message);
+    }
+  };
+
   return (
     docInfo && (
       <div className="mt-32">
@@ -126,13 +172,13 @@ function Apointmet() {
               docSlot.map((item, index) => {
                 return (
                   <div
+                    key={index}
                     onClick={() => setSlotIndex(index)}
                     className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${
                       slotIndex === index
                         ? "bg-primary text-white"
                         : "border border-gray-200"
                     }`}
-                    key={index}
                   >
                     <p>{item[0] && daysOOfWeek[item[0].dateTime.getDay()]}</p>
                     <p>{item[0] && item[0].dateTime.getDate()}</p>
@@ -144,7 +190,7 @@ function Apointmet() {
             {docSlot.length &&
               docSlot[slotIndex].map((i, index) => {
                 return (
-                  <>
+                  <div key={index}>
                     <p
                       onClick={() => {
                         setSlotTime(i.time);
@@ -159,13 +205,16 @@ function Apointmet() {
                       {" "}
                       {i.time.toLowerCase()}
                     </p>
-                  </>
+                  </div>
                 );
               })}
           </div>
 
-          <button className="bg-primary text-white text-sm font-light py-3 rounded-full px-12 mt-4">
-            Book and Appointment
+          <button
+            onClick={bookAppointment}
+            className="bg-primary text-white text-sm font-light py-3 rounded-full px-12 mt-4"
+          >
+            Book and Appointmentx
           </button>
         </div>
 
