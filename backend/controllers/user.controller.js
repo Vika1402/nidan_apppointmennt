@@ -102,11 +102,20 @@ export const getUserProfile = async (req, res) => {
 // Update user profile
 export const updateUserProfile = async (req, res) => {
   try {
-    const { userId, name, email, phone, dob, gender, address } = req.body;
+    const { userId, name, phone, dob, gender, address } = req.body;
     const imageFile = req.file;
 
-    if (!email || !name || !userId || !phone || !dob || !gender || !address) {
-      return res.json({ success: false, message: "All feild required" });
+    if (!name) {
+      return res.json({ success: false, message: "Name is required" });
+    }
+    if (!phone) {
+      return res.json({ success: false, message: "Phone is required" });
+    }
+    if (!dob) {
+      return res.json({ success: false, message: "Date of birth is required" });
+    }
+    if (!gender) {
+      return res.json({ success: false, message: "Gender is required" });
     }
 
     await User.findByIdAndUpdate(userId, {
@@ -114,11 +123,10 @@ export const updateUserProfile = async (req, res) => {
       phone,
       dob,
       gender,
-      email,
-      address: JSON.parse(address),
+      address: address ? JSON.parse(address) : undefined,
     });
     if (imageFile) {
-      //upload image cloinadary
+      //upload image to cloudinary
       const imageUpload = await cloudinary.uploader.upload(imageFile.path, {
         resource_type: "image",
       });

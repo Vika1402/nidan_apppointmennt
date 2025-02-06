@@ -13,7 +13,7 @@ const userAuthentication = async (req, res, next) => {
     req.body.userId = decodeToken.id;
     next();
   } catch (error) {
-    res.status(400).send({ success: false, message: error.message });
+    res.status(401).send({ success: false, message: "Invalid or expired token" });
   }
 };
 
