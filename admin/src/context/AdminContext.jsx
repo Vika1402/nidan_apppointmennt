@@ -9,6 +9,7 @@ const AdminContextProvider = ({ children }) => {
   );
 
   const [doctors, setDoctors] = useState([]);
+  const [appointments, setAppointments] = useState(null);
 
   const getAllDoctors = async () => {
     try {
@@ -53,13 +54,14 @@ const AdminContextProvider = ({ children }) => {
     }
   };
 
-  
   const value = {
     atoken,
     setAtoken,
     doctors,
     getAllDoctors,
-    changeAvailablity
+    changeAvailablity,
+    appointments,
+    setAppointments,
   };
 
   return (

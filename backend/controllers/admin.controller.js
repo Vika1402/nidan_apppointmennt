@@ -3,6 +3,7 @@ import { Doctor } from "../models/doctor.schema.js";
 import validator from "validator";
 import { v2 as cloudinary } from "cloudinary";
 import { accessTokenGeneratorFromJWT } from "../utility/jwtTokenGenrator.js";
+import { Appointment } from "../models/appointment.model.js";
 const addDoctor = async (req, res) => {
   const {
     name,
@@ -122,5 +123,17 @@ const getAllDoctors = async (req, res) => {
       .send({ error: "Error adding doctor", message: error.message });
   }
 };
-
-export { addDoctor, loginAdmin, getAllDoctors };
+const getAdminAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({});
+    res.json({
+      success: true,
+      appointments,
+      message: "Appointment fetched",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+export { addDoctor, loginAdmin, getAllDoctors, getAdminAppointments };

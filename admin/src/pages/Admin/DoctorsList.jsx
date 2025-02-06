@@ -25,10 +25,10 @@ function DoctorsList() {
         {doctors?.map((item, index) => (
           <div
             key={index}
-            className="border rounded-xl max-w-52 border-amber-500 overflow-hidden cursor-pointer"
+            className="border rounded-xl max-w-72 border-amber-500 overflow-hidden cursor-pointer"
           >
             <img
-              className="object-cover object-center hover:bg-orange-400 w-full bg-amber-100"
+              className="object-cover object-center hover:bg-orange-400 w-72 h-72"
               src={item.image}
               alt={item.name}
             />

@@ -1,12 +1,14 @@
 import express from "express";
 import {
   addDoctor,
+  getAdminAppointments,
   getAllDoctors,
   loginAdmin,
 } from "../controllers/admin.controller.js";
 import { upload } from "../middlewares/multer.js";
 import { adminAuthentication } from "../middlewares/authAdmin.js";
 import { changeAvailability } from "../controllers/doctor.controller.js";
+import { getUserAppointments } from "../controllers/user.controller.js";
 
 const adminRouter = express.Router();
 
@@ -24,4 +26,6 @@ adminRouter.post(
   adminAuthentication,
   changeAvailability
 );
+adminRouter.post("/get-appointment", adminAuthentication, getAdminAppointments);
+
 export { adminRouter };
