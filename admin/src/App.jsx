@@ -1,8 +1,8 @@
-import { useContext, useEffect } from "react";
+import { useContext } from "react";
 import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
 import { AdminContext } from "./context/AdminContext";
-import { useNavigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Dashbord from "./pages/Admin/Dashbord";

@@ -53,7 +53,22 @@ const AdminContextProvider = ({ children }) => {
       toast.error(error.message);
     }
   };
+  const allAppointments = async () => {
+    const { data } = await axiosInstance.post(
+      "/api/admin/get-appointment",
+      {},
+      {
+        headers: { atoken },
+      }
+    );
 
+    if (data.success) {
+      setAppointments(data.appointments);
+      // console.log(data);
+    } else {
+      console.log(data.message);
+    }
+  };
   const value = {
     atoken,
     setAtoken,
@@ -62,6 +77,7 @@ const AdminContextProvider = ({ children }) => {
     changeAvailablity,
     appointments,
     setAppointments,
+    allAppointments,
   };
 
   return (

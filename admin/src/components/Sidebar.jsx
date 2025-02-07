@@ -8,7 +8,7 @@ import { Link, NavLink } from "react-router-dom";
 function Sidebar() {
   const { atoken } = useContext(AdminContext);
   return (
-    <div className="bg-red-50 min-h-screen  ">
+    <div className="bg-red-50 min-h-screen ">
       {atoken && (
         <ul>
           <NavLink

@@ -31,7 +31,7 @@ function App() {
         <Route path="/*" element={<Home />} />
       </Routes>
       <Footer />
-      <Toaster />
+      <Toaster position="top-right" reverseOrder={false} />
     </div>
   );
 }

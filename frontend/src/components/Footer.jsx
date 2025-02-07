@@ -17,14 +17,16 @@ function Footer() {
               }
             }}
           >
-            <GiHospital className="text-green-700 font-bold text-3xl" /> 𝒩𝒾𝒹𝒶𝓃
+            <span className="font-bold  mx-20 text-2xl tracking-widest absolute">
+              NIDAN
+            </span>
+            <img className="w-20" src={assets.medical} alt="" />
           </p>
 
           <p className="w-full md:w-2/3 text-gray-600 leading-6">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Natus
-            labore molestiae minus odio, totam, nihil rem aut exercitationem
-            debitis vel repellendus id eaque quis maiores eius! Ipsum eaque
-            magni esse.
+            At Nidan, we are committed to providing high-quality healthcare with
+            expert medical professionals and state-of-the-art facilities. Book
+            an appointment today and experience compassionate care.
           </p>
         </div>
         <div className="">

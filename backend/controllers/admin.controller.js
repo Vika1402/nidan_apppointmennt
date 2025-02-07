@@ -136,4 +136,29 @@ const getAdminAppointments = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+export const deleteAppointment = async (req, res) => {
+  const { appointmentId } = req.body;
+  console.log(appointmentId);
+
+  if (!appointmentId) {
+    return res.json({ success: false, message: "Appointment ID is required" });
+  }
+
+  try {
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    await Appointment.findByIdAndDelete(appointmentId);
+
+    res.json({
+      success: true,
+      message: "Appointment deleted successfully",
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.json({ success: false, message: err.message });
+  }
+};
 export { addDoctor, loginAdmin, getAllDoctors, getAdminAppointments };

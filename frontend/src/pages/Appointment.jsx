@@ -41,7 +41,7 @@ function Appointment() {
       );
 
       let endTime = new Date(currentDate);
-      endTime.setHours(21, 0, 0, 0);
+      endTime.setHours(24, 0, 0, 0);
 
       let dailySlots = [];
       while (currentDate < endTime) {
@@ -80,10 +80,20 @@ function Appointment() {
     }
 
     try {
-      const { dateTime } = docSlots[selectedSlot.dateIndex][0];
-      const slotDate = `${dateTime.getDate()}_${
+      const selectedSlotData = docSlots[selectedSlot.dateIndex]?.find(
+        (slot) => slot.time === selectedSlot.time
+      );
+
+      if (!selectedSlotData) {
+        return toast.error("Invalid slot selection.");
+      }
+
+      const { dateTime } = selectedSlotData;
+
+      // Ensure correct "DD/MM/YYYY" format for backend
+      const slotDate = `${dateTime.getDate()}/${
         dateTime.getMonth() + 1
-      }_${dateTime.getFullYear()}`;
+      }/${dateTime.getFullYear()}`;
 
       const { data } = await axiosInstance.post(
         "/api/user/appointment",
@@ -99,7 +109,7 @@ function Appointment() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Slot Not Available Plese Choose Another Date and Time ..");
+      toast.error("Slot Not Available. Please choose another date and time.");
     }
   };
 
@@ -158,26 +168,41 @@ function Appointment() {
 
           <div className="flex gap-3 mt-4 overflow-x-auto">
             {docSlots[selectedSlot.dateIndex]
-              ?.filter(
-                (slot) =>
-                  parseInt(slot.time.split(":")[0], 10) >= 9 &&
-                  parseInt(slot.time.split(":")[0], 10) < 17
-              )
-              .map((slot, index) => (
-                <p
-                  key={index}
-                  onClick={() =>
-                    setSelectedSlot({ ...selectedSlot, time: slot.time })
-                  }
-                  className={`text-sm px-5 py-2 rounded-full cursor-pointer ${
-                    selectedSlot.time === slot.time
-                      ? "bg-primary text-white"
-                      : "text-gray-400 border border-gray-300"
-                  }`}
-                >
-                  {slot.time}
-                </p>
-              ))}
+              ?.filter((slot) => {
+                const hour = parseInt(slot.time.split(":")[0], 10);
+                return hour >= 9 && hour < 17;
+              })
+              .map((slot, index) => {
+                // Convert "HH:mm" time to AM/PM format
+                const [hours, minutes] = slot.time.split(":");
+                const formattedTime = new Date(
+                  2000,
+                  0,
+                  1,
+                  hours,
+                  minutes
+                ).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                });
+
+                return (
+                  <p
+                    key={index}
+                    onClick={() =>
+                      setSelectedSlot({ ...selectedSlot, time: slot.time })
+                    }
+                    className={`text-sm px-5 py-2 rounded-full cursor-pointer ${
+                      selectedSlot.time === slot.time
+                        ? "bg-primary text-white"
+                        : "text-gray-400 border border-gray-300"
+                    }`}
+                  >
+                    {formattedTime}
+                  </p>
+                );
+              })}
           </div>
 
           <button

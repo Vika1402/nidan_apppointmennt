@@ -7,24 +7,30 @@ function Navbar() {
   const navigate = useNavigate();
 
   const [showMenu, setShowMenu] = useState(false);
-  const { token, setToken, userData } = useContext(AppContext);
+  const { token, setToken, userData, loadUserProfileData } =
+    useContext(AppContext);
 
   const logoutHandler = () => {
     localStorage.removeItem("token");
     setToken(null); // Update state
   };
 
+  useEffect(() => {
+    loadUserProfileData();
+  }, []);
   return (
     <div className="flex items-center justify-between py-4 mb-5 z-10 shadow-md fixed top-0 right-0 left-0 bg-white">
       <p
-        className="text-2xl pl-2 font-bold flex items-center gap-2"
+        className="text-2xl pl-2 font-bold flex items-center gap-2 "
         onClick={() => {
           navigate("/");
           scrollTo(0, 0);
         }}
       >
-        <GiHospital className="text-green-700 font-bold text-3xl" />{" "}
-        <span className="font-bold text-2xl">𝒩𝒾𝒹𝒶𝓃</span>
+        <img className="w-20 absolute " src={assets.medical} alt="" />
+        <span className="font-bold  mx-20 text-2xl tracking-widest  absolute">
+          NIDAN
+        </span>
       </p>
 
       <ul className="hidden md:flex gap-5 items-start lg:text-xl font-medium">

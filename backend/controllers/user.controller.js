@@ -5,6 +5,9 @@ import { User } from "../models/user.model.js";
 import { v2 as cloudinary } from "cloudinary";
 import { Appointment } from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.schema.js";
+import Razorpay from "razorpay";
+import dotenv from "dotenv";
+dotenv.config();
 // Register a new user
 export const registerUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -143,17 +146,18 @@ export const updateUserProfile = async (req, res) => {
 };
 
 //write conntroller ook appountment
-// Book an appointment
 export const bookAppointment = async (req, res) => {
   try {
     const { docId, slotDate, slotTime, userId } = req.body;
 
+    // Check if all required fields are present
     if (!userId || !docId || !slotDate || !slotTime) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
 
+    // Find doctor
     const docData = await Doctor.findById(docId);
     if (!docData || !docData.available) {
       return res
@@ -161,19 +165,28 @@ export const bookAppointment = async (req, res) => {
         .json({ success: false, message: "Doctor not available" });
     }
 
-    let slotBooked = docData.slot_booked;
+    // Check if slot is already booked
+    let slotBooked = docData.slotBooked || {}; // Ensure slotBooked exists
     slotBooked[slotDate] = slotBooked[slotDate] || [];
 
     if (slotBooked[slotDate].includes(slotTime)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Slot time not available" });
+      return res.status(400).json({
+        success: false,
+        message: "Slot already booked. Please choose another date or time.",
+      });
     }
 
+    // Book the slot
     slotBooked[slotDate].push(slotTime);
     await Doctor.findByIdAndUpdate(docId, { slotBooked }, { new: true });
 
+    // Fetch user details
     const userData = await User.findById(userId);
+    if (!userData) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Create the appointment
     await Appointment.create({
       userId,
       docId,
@@ -182,17 +195,19 @@ export const bookAppointment = async (req, res) => {
       userData,
       docData,
       amount: docData.fees,
-      date: Date.now(),
+      date: new Date(), // Use Date() instead of Date.now()
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "Appointment booked successfully" });
+    res.status(201).json({
+      success: true,
+      message: "Appointment booked successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 // Get user appointments
 export const getUserAppointments = async (req, res) => {
@@ -218,7 +233,7 @@ export const getUserAppointments = async (req, res) => {
 export const cancelAppointment = async (req, res) => {
   const { appointmentId } = req.body;
   console.log(appointmentId);
-  
+
   if (!appointmentId) {
     return res.json({ success: false, message: "Appointment ID is required" });
   }
@@ -229,7 +244,9 @@ export const cancelAppointment = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    await Appointment.findByIdAndDelete(appointmentId);
+    await Appointment.findByIdAndUpdate(appointmentId, {
+      cancelled: true,
+    });
 
     res.json({
       success: true,
@@ -238,5 +255,58 @@ export const cancelAppointment = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.json({ success: false, message: err.message });
+  }
+};
+
+//api to make payment razorpay
+const razorpayInstance = new Razorpay({
+  key_id: process.env.TEST_KEY_ID,
+  key_secret: process.env.TEST_KEY_SECRET,
+});
+
+export const paymentRazorPay = async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+
+    const appointmentData = await Appointment.findById(appointmentId);
+    if (!appointmentData || appointmentData.cancelled) {
+      return res.json({
+        success: false,
+        message: "Appointment cancelled or not found",
+      });
+    }
+
+    const options = {
+      amount: appointmentData.amount, // Amount should be in paise
+      currency: process.env.CURRENCY || "INR", // Default to INR if not set
+      receipt: appointmentId,
+    };
+
+    // Creating an order
+    const order = await razorpayInstance.orders.create(options);
+
+    res.json({ success: true, order });
+  } catch (error) {
+    //  console.error("Error in paymentRazorPay:", error.message);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+//api verify razorrPAy payment
+
+export const verifyRazorPay = async (req, res) => {
+  try {
+    const { razorpay_order_id } = req.body;
+    const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+    //console.log(orderInfo);
+    if (orderInfo.status === "paid") {
+      await Appointment.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+      res.json({ success: true, message: "Payment Successfull" });
+    } else {
+      res.json({ success: false, message: "Payment Failed" });
+    }
+  } catch (error) {
+    console.error("Error in paymentRazorPay:", error.message);
+    res.json({ success: false, message: error.message });
   }
 };
